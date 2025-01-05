@@ -30,8 +30,12 @@ import {
   getMostRecentUserMessage,
   sanitizeResponseMessages,
 } from '@/lib/utils';
+import { createResource } from '@/lib/actions/resources';
+
 
 import { generateTitleFromUserMessage } from '../../actions';
+import { findRelevantContent } from '@/lib/ai/embeddings';
+
 
 export const maxDuration = 60;
 
@@ -39,12 +43,16 @@ type AllowedTools =
   | 'createDocument'
   | 'updateDocument'
   | 'requestSuggestions'
+  | 'addResource'
+  | 'getInformation'
   | 'getWeather';
 
 const blocksTools: AllowedTools[] = [
   'createDocument',
   'updateDocument',
   'requestSuggestions',
+  'addResource',
+  'getInformation'
 ];
 
 const weatherTools: AllowedTools[] = ['getWeather'];
@@ -407,6 +415,25 @@ export async function POST(request: Request) {
                 message: 'Suggestions have been added to the document',
               };
             },
+          },
+          addResource: {
+            description: `add a resource to your knowledge base.
+              If the user provides a random piece of knowledge unprompted, use this tool without asking for confirmation.`,
+            parameters: z.object({
+              content: z
+                .string()
+                .describe('the content or resource to add to the knowledge base'),
+            }),
+            execute: async ({ content }) => {
+              return createResource({ content });
+            },
+          },
+          getInformation: {
+            description: `get information from your knowledge base to answer questions.`,
+            parameters: z.object({
+              question: z.string().describe('the users question'),
+            }),
+            execute: async ({ question }) => findRelevantContent(question),
           },
         },
         onFinish: async ({ response }) => {
