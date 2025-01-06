@@ -46,7 +46,11 @@ type AllowedTools =
   | 'addResource'
   | 'getInformation';
 
-const blocksTools: AllowedTools[] = [
+const publicTools: AllowedTools[] = [
+ 'getInformation'
+];
+
+const privateTools: AllowedTools[] = [
   'createDocument',
   'updateDocument',
   'requestSuggestions',
@@ -54,15 +58,13 @@ const blocksTools: AllowedTools[] = [
   'getInformation'
 ];
 
-
-const allTools: AllowedTools[] = [...blocksTools];
-
 export async function POST(request: Request) {
   const {
     id,
     messages,
     modelId,
-  }: { id: string; messages: Array<Message>; modelId: string } =
+    visibility
+  }: { id: string; messages: Array<Message>; modelId: string, visibility: 'public' | 'private' } =
     await request.json();
 
   const session = await auth();
@@ -88,7 +90,7 @@ export async function POST(request: Request) {
 
   if (!chat) {
     const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
+    await saveChat({ id, userId: session.user.id, title, visibility });
   }
 
   const userMessageId = generateUUID();
@@ -111,7 +113,7 @@ export async function POST(request: Request) {
         system: systemPrompt,
         messages: coreMessages,
         maxSteps: 5,
-        experimental_activeTools: allTools,
+        experimental_activeTools: chat.visibility === 'public' ? publicTools : privateTools,
         tools: {
           createDocument: {
             description:

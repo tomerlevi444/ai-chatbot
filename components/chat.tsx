@@ -42,7 +42,7 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, modelId: selectedModelId },
+    body: { id, modelId: selectedModelId, visibility: selectedVisibilityType },
     initialMessages,
     experimental_throttle: 100,
     onFinish: () => {
