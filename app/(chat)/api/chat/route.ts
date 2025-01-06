@@ -113,7 +113,7 @@ export async function POST(request: Request) {
         system: systemPrompt,
         messages: coreMessages,
         maxSteps: 5,
-        experimental_activeTools: chat.visibility === 'public' ? publicTools : privateTools,
+        experimental_activeTools: visibility === 'public' ? publicTools : privateTools,
         tools: {
           createDocument: {
             description:
