@@ -60,17 +60,26 @@ const privateTools: AllowedTools[] = [
 
 export async function POST(request: Request) {
   const {
-    id,
+    id, 
     messages,
     modelId,
     visibility
   }: { id: string; messages: Array<Message>; modelId: string, visibility: 'public' | 'private' } =
     await request.json();
 
-  const session = await auth();
+  const chat = await getChatById({ id });
 
-  if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
+  let userId: string;
+  if (chat && chat.visibility === 'private') {
+    const session = await auth();
+
+    if (!session || !session.user || !session.user.id) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    userId = session.user.id;
+  } else {
+    userId = generateUUID()
   }
 
   const model = models.find((model) => model.id === modelId);
@@ -86,11 +95,9 @@ export async function POST(request: Request) {
     return new Response('No user message found', { status: 400 });
   }
 
-  const chat = await getChatById({ id });
-
   if (!chat) {
     const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title, visibility });
+    await saveChat({ id, userId, title, visibility });
   }
 
   const userMessageId = generateUUID();
@@ -200,13 +207,13 @@ export async function POST(request: Request) {
                 dataStream.writeData({ type: 'finish', content: '' });
               }
 
-              if (session.user?.id) {
+              if (userId) {
                 await saveDocument({
                   id,
                   title,
                   kind,
                   content: draftText,
-                  userId: session.user.id,
+                  userId,
                 });
               }
 
@@ -305,13 +312,13 @@ export async function POST(request: Request) {
                 dataStream.writeData({ type: 'finish', content: '' });
               }
 
-              if (session.user?.id) {
+              if (userId) {
                 await saveDocument({
                   id,
                   title: document.title,
                   content: draftText,
                   kind: document.kind,
-                  userId: session.user.id,
+                  userId,
                 });
               }
 
@@ -380,9 +387,7 @@ export async function POST(request: Request) {
                 suggestions.push(suggestion);
               }
 
-              if (session.user?.id) {
-                const userId = session.user.id;
-
+              if (userId) {
                 await saveSuggestions({
                   suggestions: suggestions.map((suggestion) => ({
                     ...suggestion,
@@ -422,7 +427,7 @@ export async function POST(request: Request) {
           },
         },
         onFinish: async ({ response }) => {
-          if (session.user?.id) {
+          if (userId) {
             try {
               const responseMessagesWithoutIncompleteToolCalls =
                 sanitizeResponseMessages(response.messages);
