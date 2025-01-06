@@ -60,7 +60,7 @@ const privateTools: AllowedTools[] = [
 
 export async function POST(request: Request) {
   const {
-    id, 
+    id,
     messages,
     modelId,
     visibility
