@@ -129,7 +129,7 @@ function PureBlock({
     [],
   );
 
-  const { open: isSidebarOpen } = useSidebar();
+  //const { open: isSidebarOpen } = useSidebar();
 
   useEffect(() => {
     if (documents && documents.length > 0) {
