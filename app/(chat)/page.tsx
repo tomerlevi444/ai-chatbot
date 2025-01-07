@@ -12,10 +12,6 @@ export default async function Page() {
 
   const session = await auth();
 
-  if (!session || !session.user) {
-    return notFound();
-  }
-
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('model-id')?.value;
 
@@ -27,7 +23,7 @@ export default async function Page() {
     <>
       <Chat
         key={id}
-        userId={session.user.id}
+        userId={session?.user?.id}
         id={id}
         initialMessages={[]}
         selectedModelId={selectedModelId}
