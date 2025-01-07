@@ -401,13 +401,15 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
-          {privateChats}
+            My Chats
+            {privateChats}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
       <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
+            Public Chats
             {publicChats}
           </SidebarMenu>
         </SidebarGroupContent>
