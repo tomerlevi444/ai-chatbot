@@ -4,9 +4,17 @@ import { Chat } from '@/components/chat';
 import { DEFAULT_MODEL_NAME, models } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
+import { auth } from '@/app/(auth)/auth'
+import { notFound } from 'next/navigation';
 
 export default async function Page() {
   const id = generateUUID();
+
+  const session = await auth();
+
+  if (!session || !session.user) {
+    return notFound();
+  }
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('model-id')?.value;
@@ -19,6 +27,7 @@ export default async function Page() {
     <>
       <Chat
         key={id}
+        userId={session.user.id}
         id={id}
         initialMessages={[]}
         selectedModelId={selectedModelId}

@@ -5,7 +5,10 @@ import { DEFAULT_MODEL_NAME, models } from '@/lib/ai/models';
 import { generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 
-export default async function Page() {
+export default async function Page(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { id: userId } = params;
+
   const id = generateUUID();
 
   const cookieStore = await cookies();
@@ -19,6 +22,7 @@ export default async function Page() {
     <>
       <Chat
         key={id}
+        userId={userId}
         id={id}
         initialMessages={[]}
         selectedModelId={selectedModelId}

@@ -32,7 +32,6 @@ import {
 } from '@/lib/utils';
 import { createResource } from '@/lib/actions/resources';
 
-
 import { generateTitleFromUserMessage } from '../../actions';
 import { findRelevantContent } from '@/lib/ai/embeddings';
 
@@ -61,15 +60,16 @@ const privateTools: AllowedTools[] = [
 export async function POST(request: Request) {
   const {
     id,
+    publicUserId,
     messages,
     modelId,
     visibility
-  }: { id: string; messages: Array<Message>; modelId: string, visibility: 'public' | 'private' } =
+  }: { id: string; publicUserId?: string | null, messages: Array<Message>; modelId: string, visibility: 'public' | 'private' } =
     await request.json();
 
   const chat = await getChatById({ id });
 
-  let userId: string;
+  let userId = publicUserId;
   if (chat && chat.visibility === 'private') {
     const session = await auth();
 
@@ -78,8 +78,10 @@ export async function POST(request: Request) {
     }
 
     userId = session.user.id;
-  } else {
-    userId = generateUUID()
+  }
+
+  if (!userId) {
+    throw `userId doesn't exist;`
   }
 
   const model = models.find((model) => model.id === modelId);

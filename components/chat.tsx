@@ -16,19 +16,22 @@ import { VisibilityType } from './visibility-selector';
 import { useBlockSelector } from '@/hooks/use-block';
 
 export function Chat({
+  userId,
   id,
   initialMessages,
   selectedModelId,
   selectedVisibilityType,
   isReadonly,
 }: {
+  userId?: string | null;
   id: string;
   initialMessages: Array<Message>;
   selectedModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  const { mutate } = useSWRConfig();
+  const { mutate } =
+  useSWRConfig();
 
   const {
     messages,
@@ -42,7 +45,7 @@ export function Chat({
     reload,
   } = useChat({
     id,
-    body: { id, modelId: selectedModelId, visibility: selectedVisibilityType },
+    body: { id, publicUserId: userId, modelId: selectedModelId, visibility: selectedVisibilityType },
     initialMessages,
     experimental_throttle: 100,
     onFinish: () => {
@@ -62,6 +65,7 @@ export function Chat({
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
+          userId={userId}
           chatId={id}
           selectedModelId={selectedModelId}
           selectedVisibilityType={selectedVisibilityType}

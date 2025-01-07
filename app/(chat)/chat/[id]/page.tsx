@@ -17,9 +17,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     notFound();
   }
 
-  const session = await auth();
-
   if (chat.visibility === 'private') {
+    const session = await auth();
+
     if (!session || !session.user) {
       return notFound();
     }
@@ -42,6 +42,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   return (
     <>
       <Chat
+        userId={chat?.userId}
         id={chat.id}
         initialMessages={convertToUIMessages(messagesFromDb)}
         selectedModelId={selectedModelId}
