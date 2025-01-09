@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 
 import { customModel } from '@/lib/ai';
 import {
+  addApartment as addApartmentDAL,
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
   updateChatVisiblityById,
@@ -51,4 +52,17 @@ export async function updateChatVisibility({
   visibility: VisibilityType;
 }) {
   await updateChatVisiblityById({ chatId, visibility });
+}
+
+
+export async function addApartment({
+  userId,
+  title,
+  properties
+}: {
+  userId: string,
+  title: string;
+  properties: string[];
+}) {
+  await addApartmentDAL({ userId, title, properties });
 }

@@ -10,7 +10,8 @@ import {
   foreignKey,
   boolean,
   index,
-  vector
+  vector,
+  PgArray
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -24,7 +25,7 @@ export const user = pgTable('User', {
 
 export type User = InferSelectModel<typeof user>;
 
-export const chat = pgTable('Chat', {
+export const chat = pgTable('chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   createdAt: timestamp('createdAt').notNull(),
   title: text('title').notNull(),
@@ -38,7 +39,7 @@ export const chat = pgTable('Chat', {
 
 export type Chat = InferSelectModel<typeof chat>;
 
-export const message = pgTable('Message', {
+export const message = pgTable('message', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   chatId: uuid('chatId')
     .notNull()
@@ -51,7 +52,7 @@ export const message = pgTable('Message', {
 export type Message = InferSelectModel<typeof message>;
 
 export const vote = pgTable(
-  'Vote',
+  'vote',
   {
     chatId: uuid('chatId')
       .notNull()
@@ -71,7 +72,7 @@ export const vote = pgTable(
 export type Vote = InferSelectModel<typeof vote>;
 
 export const document = pgTable(
-  'Document',
+  'document',
   {
     id: uuid('id').notNull().defaultRandom(),
     createdAt: timestamp('createdAt').notNull(),
@@ -94,7 +95,7 @@ export const document = pgTable(
 export type Document = InferSelectModel<typeof document>;
 
 export const suggestion = pgTable(
-  'Suggestion',
+  'suggestion',
   {
     id: uuid('id').notNull().defaultRandom(),
     documentId: uuid('documentId').notNull(),
@@ -118,6 +119,30 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+// Apartment
+
+export const apartment = pgTable(
+  'apartment',
+  {
+    id: uuid('id').notNull().defaultRandom(),
+    createdAt: timestamp('createdAt').notNull(),
+    title: text('title').notNull(),
+    properties: text('properties').array().default(sql`'{}'::text[]`).notNull(),
+    images: text('images').array().default(sql`'{}'::text[]`).notNull(),
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id),
+    visible: boolean('visible').default(true)
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.id] }),
+    };
+  },
+);
+
+export type Apartment = InferSelectModel<typeof apartment>;
 
 // Resources
 

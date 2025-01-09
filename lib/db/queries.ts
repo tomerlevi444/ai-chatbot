@@ -15,6 +15,8 @@ import {
   type Message,
   message,
   vote,
+  apartment,
+  type Apartment
 } from './schema';
 import { BlockKind } from '@/components/block';
 
@@ -328,6 +330,60 @@ export async function updateChatVisiblityById({
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
   } catch (error) {
     console.error('Failed to update chat visibility in database');
+    throw error;
+  }
+}
+
+export async function addApartment({
+  userId,
+  title,
+  properties
+}: {
+  userId: string;
+  title: string;
+  properties: string[]
+}) {
+  try {
+    return await db.insert(apartment).values({
+      createdAt: new Date(),
+      userId,
+      title,
+      properties
+    });
+  } catch (error) {
+    console.error('Failed to save apartment in database');
+    throw error;
+  }
+}
+
+export async function updateApartmentVisibility({ id, visible }: { id: string, visible: boolean }) {
+  try {
+    await db.update(apartment).set({ visible });
+  } catch (error) {
+    console.error('Failed to update apartment visibility');
+    throw error;
+  }
+}
+
+export async function getApartmentsByUserId(userId: string) {
+  try {
+    return await db
+      .select()
+      .from(apartment)
+      .where(eq(apartment.userId, userId))
+      .orderBy(desc(apartment.createdAt));
+  } catch (error) {
+    console.error('Failed to get apartments by user from database');
+    throw error;
+  }
+}
+
+export async function getApartmentById({ id }: { id: string }) {
+  try {
+    const [selectedApartment] = await db.select().from(apartment).where(eq(apartment.id, id));
+    return selectedApartment;
+  } catch (error) {
+    console.error('Failed to get apartment by id from database');
     throw error;
   }
 }

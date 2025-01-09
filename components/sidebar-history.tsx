@@ -46,7 +46,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import type { Chat } from '@/lib/db/schema';
+import type { Apartment, Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 
@@ -149,6 +149,31 @@ export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   return true;
 });
 
+const PureApartmentItem = ({
+  apartment,
+  isActive,
+  setOpenMobile,
+}: {
+  apartment: Apartment;
+  isActive: boolean;
+  setOpenMobile: (open: boolean) => void;
+}) => {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={isActive}>
+        <Link href={`/apartment/${apartment.id}`} onClick={() => setOpenMobile(false)}>
+          <span>{apartment.title}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+};
+
+export const ApartmentItem = memo(PureApartmentItem, (prevProps, nextProps) => {
+  if (prevProps.isActive !== nextProps.isActive) return false;
+  return true;
+});
+
 export function SidebarHistory({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
@@ -158,6 +183,12 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     isLoading,
     mutate,
   } = useSWR<Array<Chat>>(user ? '/api/history' : null, fetcher, {
+    fallbackData: [],
+  });
+
+  const {
+    data: apartmentData
+  } = useSWR<Array<Apartment>>(user ? '/api/apartment' : null, fetcher, {
     fallbackData: [],
   });
 
@@ -240,6 +271,18 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
         <SidebarGroupContent>
           <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
             Your conversations will appear here once you start chatting!
+          </div>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    );
+  }
+
+  if (apartmentData?.length === 0) {
+    return (
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+            Your apartments will appear here once you start chatting!
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -392,13 +435,42 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     );
   }
 
+  const getApartments = (apartments: Apartment[] | undefined) => {
+    return (
+      <>
+        {apartments && apartments.length > 0 && (
+          <>
+            {apartments.map((apartment) => (
+              <ApartmentItem
+              key={apartment.id}
+              apartment={apartment}
+              isActive={apartment.id === id}
+              setOpenMobile={setOpenMobile}
+             />
+            ))
+            }
+          </>
+        )}
+      </>
+    );
+  }
+
   const privateChats = getChats(history, 'private')
   const publicChats = getChats(history, 'public')
+  const apartments = getApartments(apartmentData)
 
 
   return (
     <>
       <SidebarGroup>
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            Apartments
+            {apartments}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
             My Chats

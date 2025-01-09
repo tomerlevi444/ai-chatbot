@@ -8,7 +8,7 @@ import type {
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import type { Message as DBMessage, Document } from '@/lib/db/schema';
+import type { Apartment, Message as DBMessage, Document } from '@/lib/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -221,4 +221,27 @@ export function getMessageIdFromAnnotations(message: Message) {
 
   // @ts-expect-error messageIdFromServer is not defined in MessageAnnotation
   return annotation.messageIdFromServer;
+}
+
+export function createDocumentMessage({ id, apartment }: { id: string, apartment: Apartment }) {
+  return {
+    id,
+    role: "assistant",
+    content: "",
+    toolInvocations: [
+      {
+        state: "result",
+        toolName: "createDocument",
+        args: {
+          title: apartment.title,
+          kind: "text",
+        },
+        result: {
+          id: "bdd7b8e0-2a4c-4593-a41d-728cafab8053",
+          title: apartment.title,
+          kind: "text"
+        },
+      },
+    ],
+  }
 }

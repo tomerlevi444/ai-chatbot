@@ -33,6 +33,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     id,
   });
 
+  const uiMessages = convertToUIMessages(messagesFromDb);
+  
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('model-id')?.value;
   const selectedModelId =
@@ -44,7 +46,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <Chat
         userId={chat?.userId}
         id={chat.id}
-        initialMessages={convertToUIMessages(messagesFromDb)}
+        initialMessages={uiMessages}
         selectedModelId={selectedModelId}
         selectedVisibilityType={chat.visibility}
         isReadonly={false}

@@ -32,7 +32,7 @@ import {
 } from '@/lib/utils';
 import { createResource } from '@/lib/actions/resources';
 
-import { generateTitleFromUserMessage } from '../../actions';
+import { addApartment, generateTitleFromUserMessage } from '../../actions';
 import { findRelevantContent } from '@/lib/ai/embeddings';
 
 
@@ -43,7 +43,8 @@ type AllowedTools =
   | 'updateDocument'
   | 'requestSuggestions'
   | 'addResource'
-  | 'getInformation';
+  | 'getInformation'
+  | 'addApartment';
 
 const publicTools: AllowedTools[] = [
  'getInformation'
@@ -53,8 +54,7 @@ const privateTools: AllowedTools[] = [
   'createDocument',
   'updateDocument',
   'requestSuggestions',
-  'addResource',
-  'getInformation'
+  'addApartment'
 ];
 
 export async function POST(request: Request) {
@@ -405,6 +405,31 @@ export async function POST(request: Request) {
                 title: document.title,
                 kind: document.kind,
                 message: 'Suggestions have been added to the document',
+              };
+            },
+          },
+          addApartment: {
+            description: `add a apartment to associated with this user.
+              The title of the apartment should indicate its exact address or location, if this information is missing, title is: "unknown"`,
+            parameters: z.object({
+              title: z
+                .string()
+                .describe(`The title of the apartment. Name should be the apartment's exact address. If missing, title should be approximate location. if any location indicator is missing, title is: "unknown"`),
+              properties: z
+                .array(z.string())
+                .describe(`Any information describing the apartment:
+                             1. Factual information: address, number of rooms, cleanliness, etc.
+                             2. General knowledge: if the house owner is jewish, etc.
+                             3. Subjective information: "the view to the beach is exceptional."
+                             No need to arrange the data by these categories, just list all the pieces of information.
+                          `)
+            }),
+            execute: async ({ title, properties }) => {
+              await addApartment({ title, properties, userId });
+
+              return {
+                title,
+                message: 'Apartment added successfully'
               };
             },
           },

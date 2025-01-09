@@ -75,7 +75,6 @@ function PureChatHeader({
       >
         <Link
           href={`http://localhost:3000/user/${userId}/public`}
-          target="_noblank"
         >
           <VercelIcon size={16} />
           Get Link

@@ -19,6 +19,7 @@ export const authConfig = {
 
       const isLoggedIn = !!auth?.user;
       const isOnChat = nextUrl.pathname.startsWith('/');
+      const isOnApartment = nextUrl.pathname.startsWith('/apartment');
       const isApiCall = nextUrl.pathname.startsWith('/api');
       const isOnPublicChat = matchUserPublicUrl(nextUrl.pathname);
       const isOnRegister = nextUrl.pathname.startsWith('/register');
@@ -40,7 +41,7 @@ export const authConfig = {
         return true;
       }
 
-      if (isOnChat) {
+      if (isOnChat || isOnApartment) {
         if (isLoggedIn) {
           return true;
         } else {
