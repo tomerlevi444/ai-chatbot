@@ -14,9 +14,7 @@ import {
   suggestion,
   type Message,
   message,
-  vote,
-  apartment,
-  type Apartment
+  vote
 } from './schema';
 import { BlockKind } from '@/components/block';
 
@@ -200,12 +198,27 @@ export async function saveDocument({
   }
 }
 
-export async function getDocumentsById({ id }: { id: string }) {
+export async function getDocumentsById({ id, type }: { id: string | null, type: 'generic' | 'apartment' | null }) {
   try {
+    let whereClause;
+    if (!id) {
+      if (!type) {
+        throw "id and type are both null"
+      } else {
+          whereClause =  eq(document.type, type)
+      }
+    } else {
+      if (!type) {
+         whereClause = eq(document.id, id)
+      } else {
+        whereClause = and(eq(document.id, id), eq(document.type, type))
+      }
+    }
+
     const documents = await db
       .select()
       .from(document)
-      .where(eq(document.id, id))
+      .where(whereClause)
       .orderBy(asc(document.createdAt));
 
     return documents;
@@ -335,19 +348,26 @@ export async function updateChatVisiblityById({
 }
 
 export async function addApartment({
+  id,
   userId,
   title,
+  content,
   properties
 }: {
+  id: string;
   userId: string;
   title: string;
-  properties: string[]
+  content: string;
+  properties: object
 }) {
   try {
-    return await db.insert(apartment).values({
-      createdAt: new Date(),
+
+    return await db.insert(document).values({
+      id,
       userId,
       title,
+      type: 'apartment',
+      content,
       properties
     });
   } catch (error) {
@@ -356,34 +376,24 @@ export async function addApartment({
   }
 }
 
-export async function updateApartmentVisibility({ id, visible }: { id: string, visible: boolean }) {
+export async function updateDocumentVisibility({ id, visible }: { id: string, visible: boolean }) {
   try {
-    await db.update(apartment).set({ visible });
+    await db.update(document).set({ visible }).where(eq(document.id, id));
   } catch (error) {
-    console.error('Failed to update apartment visibility');
+    console.error('Failed to update document visibility');
     throw error;
   }
 }
 
-export async function getApartmentsByUserId(userId: string) {
+export async function getDocumentsByUserId({ userId, type }: { userId: string; type: 'generic' | 'apartment'; }) {
   try {
     return await db
       .select()
-      .from(apartment)
-      .where(eq(apartment.userId, userId))
-      .orderBy(desc(apartment.createdAt));
+      .from(document)
+      .where(and(eq(document.type, type), eq(document.userId, userId)))
+      .orderBy(desc(document.createdAt));
   } catch (error) {
-    console.error('Failed to get apartments by user from database');
-    throw error;
-  }
-}
-
-export async function getApartmentById({ id }: { id: string }) {
-  try {
-    const [selectedApartment] = await db.select().from(apartment).where(eq(apartment.id, id));
-    return selectedApartment;
-  } catch (error) {
-    console.error('Failed to get apartment by id from database');
+    console.error('Failed to get documents by user from database');
     throw error;
   }
 }

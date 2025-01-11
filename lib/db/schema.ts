@@ -17,7 +17,7 @@ import { sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { generateId } from 'ai';
 
-export const user = pgTable('User', {
+export const user = pgTable('user', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
@@ -27,9 +27,9 @@ export type User = InferSelectModel<typeof user>;
 
 export const chat = pgTable('chat', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
-  createdAt: timestamp('createdAt').notNull(),
+  createdAt: timestamp('created_at').notNull(),
   title: text('title').notNull(),
-  userId: uuid('userId')
+  userId: uuid('user_id')
     .notNull()
     .references(() => user.id),
   visibility: varchar('visibility', { enum: ['public', 'private'] })
@@ -41,12 +41,12 @@ export type Chat = InferSelectModel<typeof chat>;
 
 export const message = pgTable('message', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
-  chatId: uuid('chatId')
+  chatId: uuid('chat_id')
     .notNull()
     .references(() => chat.id),
   role: varchar('role').notNull(),
   content: json('content').notNull(),
-  createdAt: timestamp('createdAt').notNull(),
+  createdAt: timestamp('created_at').notNull(),
 });
 
 export type Message = InferSelectModel<typeof message>;
@@ -54,13 +54,13 @@ export type Message = InferSelectModel<typeof message>;
 export const vote = pgTable(
   'vote',
   {
-    chatId: uuid('chatId')
+    chatId: uuid('chat_id')
       .notNull()
       .references(() => chat.id),
-    messageId: uuid('messageId')
+    messageId: uuid('message_id')
       .notNull()
       .references(() => message.id),
-    isUpvoted: boolean('isUpvoted').notNull(),
+    isUpvoted: boolean('is_upvoted').notNull(),
   },
   (table) => {
     return {
@@ -75,15 +75,20 @@ export const document = pgTable(
   'document',
   {
     id: uuid('id').notNull().defaultRandom(),
-    createdAt: timestamp('createdAt').notNull(),
+    createdAt: timestamp('created_at').notNull().default(sql`now()`),
     title: text('title').notNull(),
     content: text('content'),
     kind: varchar('kind', { enum: ['text', 'code'] })
       .notNull()
       .default('text'),
+    type: varchar('type', { enum: ['generic', 'apartment'] })
+      .notNull()
+      .default('generic'),
+    properties: json('properties').default(null),
     userId: uuid('userId')
       .notNull()
       .references(() => user.id),
+    visible: boolean('visible').default(true)
   },
   (table) => {
     return {
@@ -98,16 +103,16 @@ export const suggestion = pgTable(
   'suggestion',
   {
     id: uuid('id').notNull().defaultRandom(),
-    documentId: uuid('documentId').notNull(),
-    documentCreatedAt: timestamp('documentCreatedAt').notNull(),
-    originalText: text('originalText').notNull(),
-    suggestedText: text('suggestedText').notNull(),
+    documentId: uuid('document_id').notNull(),
+    documentCreatedAt: timestamp('document_created_at').notNull(),
+    originalText: text('original_text').notNull(),
+    suggestedText: text('suggested_text').notNull(),
     description: text('description'),
-    isResolved: boolean('isResolved').notNull().default(false),
-    userId: uuid('userId')
+    isResolved: boolean('is_resolved').notNull().default(false),
+    userId: uuid('user_id')
       .notNull()
       .references(() => user.id),
-    createdAt: timestamp('createdAt').notNull(),
+    createdAt: timestamp('created_at').notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.id] }),
@@ -120,29 +125,27 @@ export const suggestion = pgTable(
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
 
-// Apartment
+// export const apartment = pgTable(
+//   'apartment',
+//   {
+//     id: uuid('id').notNull().defaultRandom(),
+//     createdAt: timestamp('createdAt').notNull(),
+//     title: text('title').notNull(),
+//     properties: text('properties').array().default(sql`'{}'::text[]`).notNull(),
+//     images: text('images').array().default(sql`'{}'::text[]`).notNull(),
+//     userId: uuid('userId')
+//       .notNull()
+//       .references(() => user.id),
+//     visible: boolean('visible').default(true)
+//   },
+//   (table) => {
+//     return {
+//       pk: primaryKey({ columns: [table.id] }),
+//     };
+//   },
+// );
 
-export const apartment = pgTable(
-  'apartment',
-  {
-    id: uuid('id').notNull().defaultRandom(),
-    createdAt: timestamp('createdAt').notNull(),
-    title: text('title').notNull(),
-    properties: text('properties').array().default(sql`'{}'::text[]`).notNull(),
-    images: text('images').array().default(sql`'{}'::text[]`).notNull(),
-    userId: uuid('userId')
-      .notNull()
-      .references(() => user.id),
-    visible: boolean('visible').default(true)
-  },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.id] }),
-    };
-  },
-);
-
-export type Apartment = InferSelectModel<typeof apartment>;
+// export type Apartment = InferSelectModel<typeof apartment>;
 
 // Resources
 
@@ -184,7 +187,7 @@ export const embeddings = pgTable(
     embedding: vector('embedding', { dimensions: 1536 }).notNull(),
   },
   table => ({
-    embeddingIndex: index('embeddingIndex').using(
+    embeddingIndex: index('embedding_index').using(
       'hnsw',
       table.embedding.op('vector_cosine_ops'),
     ),

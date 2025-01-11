@@ -8,6 +8,7 @@ export const initialBlockData: UIBlock = {
   documentId: 'init',
   content: '',
   kind: 'text',
+  type: 'generic',
   title: '',
   status: 'idle',
   isVisible: false,

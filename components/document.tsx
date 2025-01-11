@@ -25,7 +25,7 @@ const getActionText = (
 
 interface DocumentToolResultProps {
   type: 'create' | 'update' | 'request-suggestions';
-  result: { id: string; title: string; kind: BlockKind };
+  result: { id: string; title: string; kind: BlockKind, type: 'generic' | 'apartment' };
   isReadonly: boolean;
 }
 
@@ -61,6 +61,7 @@ function PureDocumentToolResult({
           documentId: result.id,
           kind: result.kind,
           content: '',
+          type: result.type,
           title: result.title,
           isVisible: true,
           status: 'idle',

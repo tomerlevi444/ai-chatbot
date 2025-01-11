@@ -1,85 +1,9 @@
 {
-  "id": "3dd6cd5e-91a1-409b-bb7d-ee52477d8d1f",
+  "id": "e74be68f-21e8-4cbe-872f-3922b121b5d6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.apartment": {
-      "name": "apartment",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "properties": {
-          "name": "properties",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "images": {
-          "name": "images",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::text[]"
-        },
-        "userId": {
-          "name": "userId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "visible": {
-          "name": "visible",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "apartment_userId_User_id_fk": {
-          "name": "apartment_userId_User_id_fk",
-          "tableFrom": "apartment",
-          "tableTo": "User",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "apartment_id_pk": {
-          "name": "apartment_id_pk",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {}
-    },
     "public.chat": {
       "name": "chat",
       "schema": "",
@@ -91,8 +15,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "createdAt": {
-          "name": "createdAt",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
@@ -103,8 +27,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "userId": {
-          "name": "userId",
+        "user_id": {
+          "name": "user_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -119,12 +43,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "chat_userId_User_id_fk": {
-          "name": "chat_userId_User_id_fk",
+        "chat_user_id_user_id_fk": {
+          "name": "chat_user_id_user_id_fk",
           "tableFrom": "chat",
-          "tableTo": "User",
+          "tableTo": "user",
           "columnsFrom": [
-            "userId"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -147,11 +71,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "createdAt": {
-          "name": "createdAt",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
         "title": {
           "name": "title",
@@ -165,26 +90,47 @@
           "primaryKey": false,
           "notNull": false
         },
-        "text": {
-          "name": "text",
+        "kind": {
+          "name": "kind",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true,
           "default": "'text'"
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'generic'"
+        },
+        "properties": {
+          "name": "properties",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'null'::json"
         },
         "userId": {
           "name": "userId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "visible": {
+          "name": "visible",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "document_userId_User_id_fk": {
-          "name": "document_userId_User_id_fk",
+        "document_userId_user_id_fk": {
+          "name": "document_userId_user_id_fk",
           "tableFrom": "document",
-          "tableTo": "User",
+          "tableTo": "user",
           "columnsFrom": [
             "userId"
           ],
@@ -196,11 +142,11 @@
         }
       },
       "compositePrimaryKeys": {
-        "document_id_createdAt_pk": {
-          "name": "document_id_createdAt_pk",
+        "document_id_created_at_pk": {
+          "name": "document_id_created_at_pk",
           "columns": [
             "id",
-            "createdAt"
+            "created_at"
           ]
         }
       },
@@ -236,8 +182,8 @@
         }
       },
       "indexes": {
-        "embeddingIndex": {
-          "name": "embeddingIndex",
+        "embedding_index": {
+          "name": "embedding_index",
           "columns": [
             {
               "expression": "embedding",
@@ -282,8 +228,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "chatId": {
-          "name": "chatId",
+        "chat_id": {
+          "name": "chat_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -300,8 +246,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "createdAt": {
-          "name": "createdAt",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
@@ -309,12 +255,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "message_chatId_chat_id_fk": {
-          "name": "message_chatId_chat_id_fk",
+        "message_chat_id_chat_id_fk": {
+          "name": "message_chat_id_chat_id_fk",
           "tableFrom": "message",
           "tableTo": "chat",
           "columnsFrom": [
-            "chatId"
+            "chat_id"
           ],
           "columnsTo": [
             "id"
@@ -373,26 +319,26 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "documentId": {
-          "name": "documentId",
+        "document_id": {
+          "name": "document_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "documentCreatedAt": {
-          "name": "documentCreatedAt",
+        "document_created_at": {
+          "name": "document_created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
-        "originalText": {
-          "name": "originalText",
+        "original_text": {
+          "name": "original_text",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "suggestedText": {
-          "name": "suggestedText",
+        "suggested_text": {
+          "name": "suggested_text",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -403,21 +349,21 @@
           "primaryKey": false,
           "notNull": false
         },
-        "isResolved": {
-          "name": "isResolved",
+        "is_resolved": {
+          "name": "is_resolved",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "userId": {
-          "name": "userId",
+        "user_id": {
+          "name": "user_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "createdAt": {
-          "name": "createdAt",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
@@ -425,12 +371,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "suggestion_userId_User_id_fk": {
-          "name": "suggestion_userId_User_id_fk",
+        "suggestion_user_id_user_id_fk": {
+          "name": "suggestion_user_id_user_id_fk",
           "tableFrom": "suggestion",
-          "tableTo": "User",
+          "tableTo": "user",
           "columnsFrom": [
-            "userId"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -438,17 +384,17 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "suggestion_documentId_documentCreatedAt_document_id_createdAt_fk": {
-          "name": "suggestion_documentId_documentCreatedAt_document_id_createdAt_fk",
+        "suggestion_document_id_document_created_at_document_id_created_at_fk": {
+          "name": "suggestion_document_id_document_created_at_document_id_created_at_fk",
           "tableFrom": "suggestion",
           "tableTo": "document",
           "columnsFrom": [
-            "documentId",
-            "documentCreatedAt"
+            "document_id",
+            "document_created_at"
           ],
           "columnsTo": [
             "id",
-            "createdAt"
+            "created_at"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -464,8 +410,8 @@
       },
       "uniqueConstraints": {}
     },
-    "public.User": {
-      "name": "User",
+    "public.user": {
+      "name": "user",
       "schema": "",
       "columns": {
         "id": {
@@ -497,20 +443,20 @@
       "name": "vote",
       "schema": "",
       "columns": {
-        "chatId": {
-          "name": "chatId",
+        "chat_id": {
+          "name": "chat_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "messageId": {
-          "name": "messageId",
+        "message_id": {
+          "name": "message_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "isUpvoted": {
-          "name": "isUpvoted",
+        "is_upvoted": {
+          "name": "is_upvoted",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
@@ -518,12 +464,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "vote_chatId_chat_id_fk": {
-          "name": "vote_chatId_chat_id_fk",
+        "vote_chat_id_chat_id_fk": {
+          "name": "vote_chat_id_chat_id_fk",
           "tableFrom": "vote",
           "tableTo": "chat",
           "columnsFrom": [
-            "chatId"
+            "chat_id"
           ],
           "columnsTo": [
             "id"
@@ -531,12 +477,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "vote_messageId_message_id_fk": {
-          "name": "vote_messageId_message_id_fk",
+        "vote_message_id_message_id_fk": {
+          "name": "vote_message_id_message_id_fk",
           "tableFrom": "vote",
           "tableTo": "message",
           "columnsFrom": [
-            "messageId"
+            "message_id"
           ],
           "columnsTo": [
             "id"
@@ -546,11 +492,11 @@
         }
       },
       "compositePrimaryKeys": {
-        "vote_chatId_messageId_pk": {
-          "name": "vote_chatId_messageId_pk",
+        "vote_chat_id_message_id_pk": {
+          "name": "vote_chat_id_message_id_pk",
           "columns": [
-            "chatId",
-            "messageId"
+            "chat_id",
+            "message_id"
           ]
         }
       },

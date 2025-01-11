@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1736281826356,
-      "tag": "0000_sleepy_owl",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1736286101050,
-      "tag": "0001_sudden_firestar",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1736455843050,
-      "tag": "0002_awesome_shinobi_shaw",
+      "when": 1736516303932,
+      "tag": "0000_low_psynapse",
       "breakpoints": true
     }
   ]

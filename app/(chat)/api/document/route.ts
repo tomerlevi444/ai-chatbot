@@ -2,16 +2,17 @@ import { auth } from '@/app/(auth)/auth';
 import { BlockKind } from '@/components/block';
 import {
   deleteDocumentsByIdAfterTimestamp,
-  getDocumentsById,
+  getDocumentsById as getDocuments,
   saveDocument,
 } from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
+  const type = searchParams.get('type');
 
-  if (!id) {
-    return new Response('Missing id', { status: 400 });
+  if (!id && !type) {
+    return new Response('Missing document parameters', { status: 400 });
   }
 
   const session = await auth();
@@ -20,7 +21,11 @@ export async function GET(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const documents = await getDocumentsById({ id });
+  if (type !== null && type !== 'generic' && type !== 'apartment') {
+    return new Response('Unknown type', { status: 400 });
+  }
+
+  const documents = await getDocuments({ id, type });
 
   const [document] = documents;
 
@@ -85,7 +90,7 @@ export async function PATCH(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const documents = await getDocumentsById({ id });
+  const documents = await getDocuments({ id });
 
   const [document] = documents;
 

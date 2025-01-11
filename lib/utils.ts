@@ -8,7 +8,7 @@ import type {
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import type { Apartment, Message as DBMessage, Document } from '@/lib/db/schema';
+import type { Message as DBMessage, Document } from '@/lib/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -223,7 +223,7 @@ export function getMessageIdFromAnnotations(message: Message) {
   return annotation.messageIdFromServer;
 }
 
-export function createDocumentMessage({ id, apartment }: { id: string, apartment: Apartment }) {
+export function createDocumentMessage({ id, document }: { id: string, document: Document }) {
   return {
     id,
     role: "assistant",
@@ -233,12 +233,12 @@ export function createDocumentMessage({ id, apartment }: { id: string, apartment
         state: "result",
         toolName: "createDocument",
         args: {
-          title: apartment.title,
+          title: document.title,
           kind: "text",
         },
         result: {
-          id: "bdd7b8e0-2a4c-4593-a41d-728cafab8053",
-          title: apartment.title,
+          id: document.id,
+          title: document.title,
           kind: "text"
         },
       },

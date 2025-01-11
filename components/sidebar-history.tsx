@@ -46,9 +46,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import type { Apartment, Chat } from '@/lib/db/schema';
+import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { Document } from '@/lib/db/schema';
 
 type GroupedChats = {
   today: Chat[];
@@ -154,7 +155,7 @@ const PureApartmentItem = ({
   isActive,
   setOpenMobile,
 }: {
-  apartment: Apartment;
+  apartment: Document;
   isActive: boolean;
   setOpenMobile: (open: boolean) => void;
 }) => {
@@ -188,7 +189,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
   const {
     data: apartmentData
-  } = useSWR<Array<Apartment>>(user ? '/api/apartment' : null, fetcher, {
+  } = useSWR<Array<Document>>(user ? `/api/document?type=apartment` : null, fetcher, {
     fallbackData: [],
   });
 
@@ -435,7 +436,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     );
   }
 
-  const getApartments = (apartments: Apartment[] | undefined) => {
+  const getApartments = (apartments: Document[] | undefined) => {
     return (
       <>
         {apartments && apartments.length > 0 && (

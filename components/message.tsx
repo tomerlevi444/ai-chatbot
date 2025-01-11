@@ -141,6 +141,11 @@ const PurePreviewMessage = ({
                             isReadonly={isReadonly}
                             result={result}
                           />
+                        ) : toolName === 'addApartment' ? (
+                          <DocumentPreview
+                            isReadonly={isReadonly}
+                            result={result}
+                          />
                         ) : toolName === 'updateDocument' ? (
                           <DocumentToolResult
                             type="update"

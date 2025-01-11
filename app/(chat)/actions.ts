@@ -56,13 +56,17 @@ export async function updateChatVisibility({
 
 
 export async function addApartment({
+  id,
   userId,
   title,
+  content,
   properties
 }: {
-  userId: string,
+  id: string;
+  userId: string;
   title: string;
-  properties: string[];
+  content: string;
+  properties: object;
 }) {
-  await addApartmentDAL({ userId, title, properties });
+  await addApartmentDAL({ id, userId, title, content, properties });
 }

@@ -42,6 +42,7 @@ export interface UIBlock {
   documentId: string;
   kind: BlockKind;
   content: string;
+  type: 'generic' | 'apartment';
   isVisible: boolean;
   status: 'streaming' | 'idle';
   boundingBox: {

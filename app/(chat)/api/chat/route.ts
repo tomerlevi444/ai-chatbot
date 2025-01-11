@@ -415,19 +415,25 @@ export async function POST(request: Request) {
               title: z
                 .string()
                 .describe(`The title of the apartment. Name should be the apartment's exact address. If missing, title should be approximate location. if any location indicator is missing, title is: "unknown"`),
-              properties: z
-                .array(z.string())
+              content: z
+                .string()
                 .describe(`Any information describing the apartment:
                              1. Factual information: address, number of rooms, cleanliness, etc.
                              2. General knowledge: if the house owner is jewish, etc.
                              3. Subjective information: "the view to the beach is exceptional."
                              No need to arrange the data by these categories, just list all the pieces of information.
+
+                             * The data should be organized in bullets, each is preferably one short sentence, but no more than two sentences.
+                             * Be concise and clear.
                           `)
             }),
-            execute: async ({ title, properties }) => {
-              await addApartment({ title, properties, userId });
+            execute: async ({ title, content }) => {
+              const id = generateUUID();
+              const properties = new Array<string>();
+              await addApartment({ id, title, content, properties, userId });
 
               return {
+                id,
                 title,
                 message: 'Apartment added successfully'
               };

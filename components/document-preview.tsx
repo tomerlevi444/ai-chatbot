@@ -60,7 +60,7 @@ export function DocumentPreview({
       return (
         <DocumentToolResult
           type="create"
-          result={{ id: result.id, title: result.title, kind: result.kind }}
+          result={{ id: result.id, title: result.title, kind: result.kind, type: result.type }}
           isReadonly={isReadonly}
         />
       );
@@ -81,6 +81,18 @@ export function DocumentPreview({
     return <LoadingSkeleton />;
   }
 
+  const doc: Document = {
+    title: block.title,
+    kind: block.kind,
+    content: block.content,
+    id: block.documentId,
+    createdAt: new Date(),
+    userId: 'noop',
+    type: 'apartment',
+    properties: {},
+    visible: false
+  }
+
   const document: Document | null = previewDocument
     ? previewDocument
     : block.status === 'streaming'
@@ -91,6 +103,9 @@ export function DocumentPreview({
           id: block.documentId,
           createdAt: new Date(),
           userId: 'noop',
+          type: block.type,
+          properties: {},
+          visible: true
         }
       : null;
 
