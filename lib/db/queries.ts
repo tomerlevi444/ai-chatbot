@@ -198,7 +198,7 @@ export async function saveDocument({
   }
 }
 
-export async function getDocumentsById({ id, type }: { id: string | null, type: 'generic' | 'apartment' | null }) {
+export async function getDocumentsById({ id, type }: { id?: string | null, type?: 'generic' | 'apartment' | null }) {
   try {
     let whereClause;
     if (!id) {

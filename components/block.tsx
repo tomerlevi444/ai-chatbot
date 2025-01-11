@@ -139,10 +139,15 @@ function PureBlock({
       if (mostRecentDocument) {
         setDocument(mostRecentDocument);
         setCurrentVersionIndex(documents.length - 1);
-        setBlock((currentBlock) => ({
+        setBlock((currentBlock) =>
+          {
+            // TODO: HACK.
+            block.kind = 'text'
+            return {
           ...currentBlock,
           content: mostRecentDocument.content ?? '',
-        }));
+        }
+      });
       }
     }
   }, [documents, setBlock]);
