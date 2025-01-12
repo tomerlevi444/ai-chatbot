@@ -5,7 +5,6 @@ import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { DEFAULT_MODEL_NAME, models } from '@/lib/ai/models';
 import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
-import { convertToUIMessages } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -29,12 +28,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     }
   }
 
-  const messagesFromDb = await getMessagesByChatId({
+  const messagesFromDb: Array<any> = await getMessagesByChatId({
     id,
   });
 
-  const uiMessages = convertToUIMessages(messagesFromDb);
-  
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('model-id')?.value;
   const selectedModelId =
@@ -46,7 +43,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <Chat
         userId={chat?.userId}
         id={chat.id}
-        initialMessages={uiMessages}
+        initialMessages={messagesFromDb}
         selectedModelId={selectedModelId}
         selectedVisibilityType={chat.visibility}
         isReadonly={false}

@@ -142,7 +142,7 @@ function PureBlock({
         setBlock((currentBlock) =>
           {
             // TODO: HACK.
-            block.kind = 'text'
+            //block.kind = 'text'
             return {
           ...currentBlock,
           content: mostRecentDocument.content ?? '',
@@ -150,7 +150,7 @@ function PureBlock({
       });
       }
     }
-  }, [documents, setBlock]);
+  }, [documents, block, setBlock]);
 
   useEffect(() => {
     mutateDocuments();
@@ -267,6 +267,8 @@ function PureBlock({
 
   const { width: windowWidth, height: windowHeight } = useWindowSize();
   const isMobile = windowWidth ? windowWidth < 768 : false;
+
+  console.log(JSON.stringify(block));
 
   return (
     <AnimatePresence>

@@ -24,7 +24,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { sanitizeUIMessages } from '@/lib/utils';
 
 import {
   ArrowUpIcon,
@@ -349,6 +348,7 @@ export const Tools = ({
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
   blockKind: 'text' | 'code';
 }) => {
+  blockKind = blockKind || 'text'
   const [primaryTool, ...secondaryTools] = toolsByBlockKind[blockKind];
 
   return (
@@ -505,7 +505,7 @@ const PureToolbar = ({
             className="p-3"
             onClick={() => {
               stop();
-              setMessages((messages) => sanitizeUIMessages(messages));
+              setMessages((messages) => messages);
             }}
           >
             <StopIcon />

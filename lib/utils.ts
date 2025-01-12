@@ -10,6 +10,8 @@ import { twMerge } from 'tailwind-merge';
 
 import type { Message as DBMessage, Document } from '@/lib/db/schema';
 
+export type ChatMessage = { id: string; createdAt: Date; role: string; content: string; chatId: string; }
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -84,121 +86,121 @@ function addToolMessageToChat({
   });
 }
 
-export function convertToUIMessages(
-  messages: Array<DBMessage>,
-): Array<Message> {
-  return messages.reduce((chatMessages: Array<Message>, message) => {
-    if (message.role === 'tool') {
-      return addToolMessageToChat({
-        toolMessage: message as CoreToolMessage,
-        messages: chatMessages,
-      });
-    }
+// export function convertToUIMessages(
+//   messages: Array<DBMessage>,
+// ): Array<Message> {
+//   return messages.reduce((chatMessages: Array<Message>, message) => {
+//     if (message.role === 'tool') {
+//       return addToolMessageToChat({
+//         toolMessage: message as CoreToolMessage,
+//         messages: chatMessages,
+//       });
+//     }
 
-    let textContent = '';
-    const toolInvocations: Array<ToolInvocation> = [];
+//     let textContent = '';
+//     const toolInvocations: Array<ToolInvocation> = [];
 
-    if (typeof message.content === 'string') {
-      textContent = message.content;
-    } else if (Array.isArray(message.content)) {
-      for (const content of message.content) {
-        if (content.type === 'text') {
-          textContent += content.text;
-        } else if (content.type === 'tool-call') {
-          toolInvocations.push({
-            state: 'call',
-            toolCallId: content.toolCallId,
-            toolName: content.toolName,
-            args: content.args,
-          });
-        }
-      }
-    }
+//     if (typeof message.content === 'string') {
+//       textContent = message.content;
+//     } else if (Array.isArray(message.content)) {
+//       for (const content of message.content) {
+//         if (content.type === 'text') {
+//           textContent += content.text;
+//         } else if (content.type === 'tool-call') {
+//           toolInvocations.push({
+//             state: 'call',
+//             toolCallId: content.toolCallId,
+//             toolName: content.toolName,
+//             args: content.args,
+//           });
+//         }
+//       }
+//     }
 
-    chatMessages.push({
-      id: message.id,
-      role: message.role as Message['role'],
-      content: textContent,
-      toolInvocations,
-    });
+//     chatMessages.push({
+//       id: message.id,
+//       role: message.role as Message['role'],
+//       content: textContent,
+//       toolInvocations,
+//     });
 
-    return chatMessages;
-  }, []);
-}
+//     return chatMessages;
+//   }, []);
+// }
 
-export function sanitizeResponseMessages(
-  messages: Array<CoreToolMessage | CoreAssistantMessage>,
-): Array<CoreToolMessage | CoreAssistantMessage> {
-  const toolResultIds: Array<string> = [];
+// export function sanitizeResponseMessages(
+//   messages: Array<CoreToolMessage | CoreAssistantMessage>,
+// ): Array<CoreToolMessage | CoreAssistantMessage> {
+//   const toolResultIds: Array<string> = [];
 
-  for (const message of messages) {
-    if (message.role === 'tool') {
-      for (const content of message.content) {
-        if (content.type === 'tool-result') {
-          toolResultIds.push(content.toolCallId);
-        }
-      }
-    }
-  }
+//   for (const message of messages) {
+//     if (message.role === 'tool') {
+//       for (const content of message.content) {
+//         if (content.type === 'tool-result') {
+//           toolResultIds.push(content.toolCallId);
+//         }
+//       }
+//     }
+//   }
 
-  const messagesBySanitizedContent = messages.map((message) => {
-    if (message.role !== 'assistant') return message;
+//   const messagesBySanitizedContent = messages.map((message) => {
+//     if (message.role !== 'assistant') return message;
 
-    if (typeof message.content === 'string') return message;
+//     if (typeof message.content === 'string') return message;
 
-    const sanitizedContent = message.content.filter((content) =>
-      content.type === 'tool-call'
-        ? toolResultIds.includes(content.toolCallId)
-        : content.type === 'text'
-          ? content.text.length > 0
-          : true,
-    );
+//     const sanitizedContent = message.content.filter((content) =>
+//       content.type === 'tool-call'
+//         ? toolResultIds.includes(content.toolCallId)
+//         : content.type === 'text'
+//           ? content.text.length > 0
+//           : true,
+//     );
 
-    return {
-      ...message,
-      content: sanitizedContent,
-    };
-  });
+//     return {
+//       ...message,
+//       content: sanitizedContent,
+//     };
+//   });
 
-  return messagesBySanitizedContent.filter(
-    (message) => message.content.length > 0,
-  );
-}
+//   return messagesBySanitizedContent.filter(
+//     (message) => message.content.length > 0,
+//   );
+// }
 
-export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
-  const messagesBySanitizedToolInvocations = messages.map((message) => {
-    if (message.role !== 'assistant') return message;
+// export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
+//   const messagesBySanitizedToolInvocations = messages.map((message) => {
+//     if (message.role !== 'assistant') return message;
 
-    if (!message.toolInvocations) return message;
+//     if (!message.toolInvocations) return message;
 
-    const toolResultIds: Array<string> = [];
+//     const toolResultIds: Array<string> = [];
 
-    for (const toolInvocation of message.toolInvocations) {
-      if (toolInvocation.state === 'result') {
-        toolResultIds.push(toolInvocation.toolCallId);
-      }
-    }
+//     for (const toolInvocation of message.toolInvocations) {
+//       if (toolInvocation.state === 'result') {
+//         toolResultIds.push(toolInvocation.toolCallId);
+//       }
+//     }
 
-    const sanitizedToolInvocations = message.toolInvocations.filter(
-      (toolInvocation) =>
-        toolInvocation.state === 'result' ||
-        toolResultIds.includes(toolInvocation.toolCallId),
-    );
+//     const sanitizedToolInvocations = message.toolInvocations.filter(
+//       (toolInvocation) =>
+//         toolInvocation.state === 'result' ||
+//         toolResultIds.includes(toolInvocation.toolCallId),
+//     );
 
-    return {
-      ...message,
-      toolInvocations: sanitizedToolInvocations,
-    };
-  });
+//     return {
+//       ...message,
+//       toolInvocations: sanitizedToolInvocations,
+//     };
+//   });
 
-  return messagesBySanitizedToolInvocations.filter(
-    (message) =>
-      message.content.length > 0 ||
-      (message.toolInvocations && message.toolInvocations.length > 0),
-  );
-}
+//   return messagesBySanitizedToolInvocations.filter(
+//     (message) =>
+//       message.content.length > 0 ||
+//       (message.toolInvocations && message.toolInvocations.length > 0),
+//   );
+// }
 
-export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
+export function getMostRecentUserMessage(messages: Array<Message>) {
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
 }
@@ -226,22 +228,15 @@ export function getMessageIdFromAnnotations(message: Message) {
 export function createDocumentMessage({ id, document }: { id: string, document: Document }) {
   return {
     id,
-    role: "assistant",
-    content: "",
-    toolInvocations: [
-      {
-        state: "result",
-        toolName: "createDocument",
-        args: {
-          title: document.title,
-          kind: "text",
-        },
-        result: {
-          id: document.id,
-          title: document.title,
-          kind: "text"
-        },
-      },
-    ],
+    role: "tool",
+    toolName: "showDocuments",
+    content: [{
+      toolName: "showDocuments",
+      type: "tool-result",
+      kind: 'text',
+      result: {
+        documentIds: [document.id]
+      }
+    }]
   }
 }

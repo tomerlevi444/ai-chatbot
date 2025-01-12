@@ -57,7 +57,7 @@ function PureDocumentToolResult({
           height: rect.height,
         };
 
-        setBlock({
+        /*setBlock({
           documentId: result.id,
           kind: result.kind,
           content: '',
@@ -66,7 +66,7 @@ function PureDocumentToolResult({
           isVisible: true,
           status: 'idle',
           boundingBox,
-        });
+        });*/
       }}
     >
       <div className="text-muted-foreground mt-1">
@@ -121,11 +121,11 @@ function PureDocumentToolCall({
           height: rect.height,
         };
 
-        setBlock((currentBlock) => ({
+        /*setBlock((currentBlock) => ({
           ...currentBlock,
           isVisible: true,
           boundingBox,
-        }));
+        }));*/
       }}
     >
       <div className="flex flex-row gap-3 items-start">

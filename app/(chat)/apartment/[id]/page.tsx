@@ -7,7 +7,6 @@ import { getDocumentById } from '@/lib/db/queries';
 import { createDocumentMessage, generateUUID } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 
-
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id: documentId } = params;
@@ -23,8 +22,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     DEFAULT_MODEL_NAME;
 
   const document = await getDocumentById({ id: documentId })
-
-  console.log(document)
 
   const uiMessage: any = createDocumentMessage({ id, document })
 

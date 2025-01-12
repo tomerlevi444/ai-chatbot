@@ -1,7 +1,9 @@
 import {
+  CoreUserMessage,
   type Message,
   convertToCoreMessages,
   createDataStreamResponse,
+  generateText,
   streamObject,
   streamText,
 } from 'ai';
@@ -19,6 +21,7 @@ import {
   deleteChatById,
   getChatById,
   getDocumentById,
+  getDocumentsByUserId,
   saveChat,
   saveDocument,
   saveMessages,
@@ -28,7 +31,6 @@ import type { Suggestion } from '@/lib/db/schema';
 import {
   generateUUID,
   getMostRecentUserMessage,
-  sanitizeResponseMessages,
 } from '@/lib/utils';
 import { createResource } from '@/lib/actions/resources';
 
@@ -44,7 +46,9 @@ type AllowedTools =
   | 'requestSuggestions'
   | 'addResource'
   | 'getInformation'
-  | 'addApartment';
+  | 'getApartments'
+  | 'addApartment'
+  | 'showDocuments';
 
 const publicTools: AllowedTools[] = [
  'getInformation'
@@ -54,7 +58,9 @@ const privateTools: AllowedTools[] = [
   'createDocument',
   'updateDocument',
   'requestSuggestions',
-  'addApartment'
+  'getApartments',
+  'addApartment',
+  'showDocuments'
 ];
 
 export async function POST(request: Request) {
@@ -104,9 +110,13 @@ export async function POST(request: Request) {
 
   const userMessageId = generateUUID();
 
+  if (typeof userMessage.content !== 'string') {
+    throw "unsupported string type"
+  }
+
   await saveMessages({
     messages: [
-      { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id },
+      { ...userMessage, content: userMessage.content, id: userMessageId, createdAt: new Date(), chatId: id },
     ],
   });
 
@@ -421,10 +431,18 @@ export async function POST(request: Request) {
                              1. Factual information: address, number of rooms, cleanliness, etc.
                              2. General knowledge: if the house owner is jewish, etc.
                              3. Subjective information: "the view to the beach is exceptional."
-                             No need to arrange the data by these categories, just list all the pieces of information.
 
-                             * The data should be organized in bullets, each is preferably one short sentence, but no more than two sentences.
-                             * Be concise and clear.
+                             * Your output should be organized in bullets.
+                             * Organize the data in bullets, each is preferably one short sentence, but no more than two sentences.
+                             * Elaborate and be more informative.
+                             * Do not add or make up information that is not provided.
+
+                             Example output:
+                             * The apartment has 2 bedrooms and 1 bathroom.
+                             * Located in a vibrant neighborhood of Tel Aviv.
+                             * Close to public transportation and local amenities.
+                             * Recently renovated with modern finishes.
+                             * The view from the balcony is lovely, overlooking the city.
                           `)
             }),
             execute: async ({ title, content }) => {
@@ -437,6 +455,38 @@ export async function POST(request: Request) {
                 title,
                 message: 'Apartment added successfully'
               };
+            },
+          },
+          getApartments: {
+            description: `get apartments matching the user's request`,
+            parameters: z.object({}),
+            execute: async ({}) => {
+              const apartments = await getDocumentsByUserId({ userId, type: 'apartment' })
+
+              const { text } = await generateText({
+                model: customModel(model.apiIdentifier),
+                system:
+                  `Given the list of apartments, which of the apartments match the user's filter, ordered from most relevant to least relevant.
+                   The response should be only array with a list of documentId.
+                   Response example: ["doc1", "doc2"]
+
+                   List of apartments:
+                   ${JSON.stringify(apartments)}
+                   `,
+                prompt: messages.slice(-1)[0].content,
+              });
+
+              const documentIds = JSON.parse(text)
+              return documentIds;
+            },
+          },
+          showDocuments: {
+            description: `get apartments matching the user's request`,
+            parameters: z.object({ documentIds: z.array(z.string()) }),
+            execute: async ({ documentIds }) => {
+              return {
+                documentIds
+              }
             },
           },
           addResource: {
@@ -462,24 +512,25 @@ export async function POST(request: Request) {
         onFinish: async ({ response }) => {
           if (userId) {
             try {
-              const responseMessagesWithoutIncompleteToolCalls =
-                sanitizeResponseMessages(response.messages);
+              const userFacingMessages = response.messages.filter(message => {
+                return message.role === 'tool' && message.content[0].toolName === 'showDocuments'
+              });
 
               await saveMessages({
-                messages: responseMessagesWithoutIncompleteToolCalls.map(
+                messages: userFacingMessages.map(
                   (message) => {
                     const messageId = generateUUID();
 
-                    if (message.role === 'assistant') {
-                      dataStream.writeMessageAnnotation({
-                        messageIdFromServer: messageId,
-                      });
-                    }
+                    // if (message.role === 'assistant') {
+                    //   dataStream.writeMessageAnnotation({
+                    //     messageIdFromServer: messageId,
+                    //   });
+                    // }
 
                     return {
                       id: messageId,
                       chatId: id,
-                      role: message.role,
+                      ...message,
                       content: message.content,
                       createdAt: new Date(),
                     };

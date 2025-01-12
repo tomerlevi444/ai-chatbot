@@ -27,6 +27,8 @@ This is a guide for using blocks tools: \`createDocument\` and \`updateDocument\
 - Immediately after creating a document
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
+After creating a document, call tool \`showDocuments\` with the documentId you have just created.
+After call to \`showDocuments\`, no need to add any text to the user.
 `;
 
 export const regularPrompt =

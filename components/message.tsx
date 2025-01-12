@@ -3,7 +3,7 @@
 import type { ChatRequestOptions, Message } from 'ai';
 import cx from 'classnames';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useMemo, useState } from 'react';
+import { Key, memo, useMemo, useState } from 'react';
 
 import type { Vote } from '@/lib/db/schema';
 
@@ -22,7 +22,7 @@ import { DocumentPreview } from './document-preview';
 
 const PurePreviewMessage = ({
   chatId,
-  message,
+  message: coreMessage,
   vote,
   isLoading,
   setMessages,
@@ -41,6 +41,7 @@ const PurePreviewMessage = ({
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
 }) => {
+  let message:any = coreMessage;
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
   return (
@@ -71,7 +72,7 @@ const PurePreviewMessage = ({
           <div className="flex flex-col gap-2 w-full">
             {message.experimental_attachments && (
               <div className="flex flex-row justify-end gap-2">
-                {message.experimental_attachments.map((attachment) => (
+                {message.experimental_attachments.map((attachment:any) => (
                   <PreviewAttachment
                     key={attachment.url}
                     attachment={attachment}
@@ -105,7 +106,7 @@ const PurePreviewMessage = ({
                       message.role === 'user',
                   })}
                 >
-                  <Markdown>{message.content as string}</Markdown>
+                  {message.role === 'user' && <Markdown>{ message.content }</Markdown>}
                 </div>
               </div>
             )}
@@ -124,29 +125,25 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {message.toolInvocations && message.toolInvocations.length > 0 && (
+            {message.role === 'tool' && (
               <div className="flex flex-col gap-4">
-                {message.toolInvocations.map((toolInvocation) => {
-                  const { toolName, toolCallId, state, args } = toolInvocation;
+                {message.content.map((toolInvocation:any) => {
+                  const { toolName, toolCallId, type, args } = toolInvocation;
 
-                  if (state === 'result') {
+                  if (type === 'tool-result') {
                     const { result } = toolInvocation;
 
                     return (
                       <div key={toolCallId}>
                         {toolName === 'getWeather' ? (
                           <Weather weatherAtLocation={result} />
-                        ) : toolName === 'createDocument' ? (
+                        ) : toolName === 'showDocuments' ? result.documentIds.map((documentId: Key | null | undefined) => (
                           <DocumentPreview
+                            key={documentId}
                             isReadonly={isReadonly}
-                            result={result}
+                            result={{ id: documentId }}
                           />
-                        ) : toolName === 'addApartment' ? (
-                          <DocumentPreview
-                            isReadonly={isReadonly}
-                            result={result}
-                          />
-                        ) : toolName === 'updateDocument' ? (
+                        )) : toolName === 'updateDocument' ? (
                           <DocumentToolResult
                             type="update"
                             result={result}

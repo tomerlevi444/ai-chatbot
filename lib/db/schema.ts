@@ -11,7 +11,8 @@ import {
   boolean,
   index,
   vector,
-  PgArray
+  PgArray,
+  jsonb
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { z } from 'zod';
