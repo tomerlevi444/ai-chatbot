@@ -198,20 +198,20 @@ export async function saveDocument({
   }
 }
 
-export async function getDocumentsById({ id, type }: { id?: string | null, type?: 'generic' | 'apartment' | null }) {
+export async function getDocuments({ id, type, userId }: { id?: string | null, type?: 'generic' | 'apartment' | null, userId: string }) {
   try {
     let whereClause;
     if (!id) {
       if (!type) {
         throw "id and type are both null"
       } else {
-          whereClause =  eq(document.type, type)
+          whereClause =  and(eq(document.type, type), eq(document.userId, userId))
       }
     } else {
       if (!type) {
-         whereClause = eq(document.id, id)
+         whereClause = and(eq(document.id, id), eq(document.userId, userId))
       } else {
-        whereClause = and(eq(document.id, id), eq(document.type, type))
+        whereClause = and(eq(document.id, id), eq(document.type, type), eq(document.userId, userId));
       }
     }
 

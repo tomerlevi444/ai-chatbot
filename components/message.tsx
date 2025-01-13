@@ -136,10 +136,10 @@ const PurePreviewMessage = ({
                       <div key={toolCallId}>
                         {toolName === 'getWeather' ? (
                           <Weather weatherAtLocation={result} />
-                        ) : toolName === 'createDocument' ? (
+                        ) : toolName === 'showDocuments' ? (
                           <DocumentPreview
                             isReadonly={isReadonly}
-                            result={result}
+                            result={{id: result.documentIds[0]}}
                           />
                         ) : toolName === 'addApartment' ? (
                           <DocumentPreview

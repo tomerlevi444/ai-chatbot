@@ -2,7 +2,6 @@ import { auth } from '@/app/(auth)/auth';
 import { BlockKind } from '@/components/block';
 import {
   deleteDocumentsByIdAfterTimestamp,
-  getDocumentsById,
   getDocumentsByUserId,
   saveDocument,
 } from '@/lib/db/queries';

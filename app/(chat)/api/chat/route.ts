@@ -44,7 +44,8 @@ type AllowedTools =
   | 'requestSuggestions'
   | 'addResource'
   | 'getInformation'
-  | 'addApartment';
+  | 'addApartment'
+  | 'showDocuments';
 
 const publicTools: AllowedTools[] = [
  'getInformation'
@@ -53,8 +54,8 @@ const publicTools: AllowedTools[] = [
 const privateTools: AllowedTools[] = [
   'createDocument',
   'updateDocument',
-  'requestSuggestions',
-  'addApartment'
+  'addApartment',
+  'showDocuments'
 ];
 
 export async function POST(request: Request) {
@@ -437,6 +438,15 @@ export async function POST(request: Request) {
                 title,
                 message: 'Apartment added successfully'
               };
+            },
+          },
+          showDocuments: {
+            description: `show the user the provided apartments via user-interface`,
+            parameters: z.object({ documentIds: z.array(z.string()) }),
+            execute: async ({ documentIds }) => {
+              return {
+                documentIds
+              }
             },
           },
           addResource: {

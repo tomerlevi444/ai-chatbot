@@ -2,12 +2,13 @@ import { auth } from '@/app/(auth)/auth';
 import { BlockKind } from '@/components/block';
 import {
   deleteDocumentsByIdAfterTimestamp,
-  getDocumentsById as getDocuments,
+  getDocuments,
   saveDocument,
 } from '@/lib/db/queries';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams } =
+  new URL(request.url);
   const id = searchParams.get('id');
   const type = searchParams.get('type');
 
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
     return new Response('Unknown type', { status: 400 });
   }
 
-  const documents = await getDocuments({ id, type });
+  const documents = await getDocuments({ id, type, userId: session!.user!.id! });
 
   const [document] = documents;
 
@@ -90,13 +91,9 @@ export async function PATCH(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const documents = await getDocuments({ id });
+  const documents = await getDocuments({ id, userId: session!.user!.id! });
 
   const [document] = documents;
-
-  if (document.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
 
   await deleteDocumentsByIdAfterTimestamp({
     id,

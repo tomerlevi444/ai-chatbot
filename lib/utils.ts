@@ -8,7 +8,7 @@ import type {
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import type { Message as DBMessage, Document } from '@/lib/db/schema';
+import { chat, type Message as DBMessage, type Document } from '@/lib/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -84,23 +84,29 @@ function addToolMessageToChat({
   });
 }
 
-export function convertToUIMessages(
-  messages: Array<DBMessage>,
-): Array<Message> {
-  return messages.reduce((chatMessages: Array<Message>, message) => {
+export function convertToUIMessages(messages: Array<DBMessage>): Array<Message> {
+  let chatMessages: Message[] = [];
+
+  for (const message of messages) {
     if (message.role === 'tool') {
-      return addToolMessageToChat({
+      // If it's a tool message, update chatMessages
+      // with the result of addToolMessageToChat
+      chatMessages = addToolMessageToChat({
         toolMessage: message as CoreToolMessage,
         messages: chatMessages,
       });
+      continue;
     }
 
     let textContent = '';
     const toolInvocations: Array<ToolInvocation> = [];
 
+    // Handle string content
     if (typeof message.content === 'string') {
       textContent = message.content;
-    } else if (Array.isArray(message.content)) {
+    }
+    // Handle array content
+    else if (Array.isArray(message.content)) {
       for (const content of message.content) {
         if (content.type === 'text') {
           textContent += content.text;
@@ -115,15 +121,19 @@ export function convertToUIMessages(
       }
     }
 
+    // Push the transformed message onto chatMessages
     chatMessages.push({
       id: message.id,
       role: message.role as Message['role'],
       content: textContent,
       toolInvocations,
     });
+  }
 
-    return chatMessages;
-  }, []);
+  const filteredChatMessages = chatMessages.filter(message => message.role !== 'assistant' || !message.toolInvocations || message.toolInvocations.length == 0 || message.toolInvocations?.[0]?.toolName === 'showDocuments')
+
+  console.log(JSON.stringify(filteredChatMessages))
+  return filteredChatMessages;
 }
 
 export function sanitizeResponseMessages(
@@ -231,13 +241,13 @@ export function createDocumentMessage({ id, document }: { id: string, document: 
     toolInvocations: [
       {
         state: "result",
-        toolName: "createDocument",
+        toolName: "showDocuments",
         args: {
           title: document.title,
           kind: "text",
         },
         result: {
-          id: document.id,
+          documentIds: [document.id],
           title: document.title,
           kind: "text"
         },
