@@ -130,7 +130,7 @@ export function convertToUIMessages(messages: Array<DBMessage>): Array<Message> 
     });
   }
 
-  const filteredChatMessages = chatMessages.filter(message => message.role !== 'assistant' || !message.toolInvocations || message.toolInvocations.length == 0 || message.toolInvocations?.[0]?.toolName === 'showDocuments')
+  const filteredChatMessages = chatMessages.filter(message => message.role !== 'assistant' || !message.toolInvocations || message.toolInvocations.length == 0 || message.toolInvocations?.[0]?.toolName === 'showDocument')
 
   console.log(JSON.stringify(filteredChatMessages))
   return filteredChatMessages;
@@ -241,15 +241,13 @@ export function createDocumentMessage({ id, document }: { id: string, document: 
     toolInvocations: [
       {
         state: "result",
-        toolName: "showDocuments",
+        toolName: "showDocument",
         args: {
           title: document.title,
           kind: "text",
         },
         result: {
-          documentIds: [document.id],
-          title: document.title,
-          kind: "text"
+          documentId: document.id
         },
       },
     ],

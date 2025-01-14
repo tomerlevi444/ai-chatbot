@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 
 import { ThemeProvider } from '@/components/theme-provider';
 
+import 'react-image-gallery/styles/css/image-gallery.css';
 import './globals.css';
 
 export const metadata: Metadata = {

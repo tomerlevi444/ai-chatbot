@@ -4,6 +4,8 @@ import {
   createDataStreamResponse,
   streamObject,
   streamText,
+  generateText,
+  generateObject,
 } from 'ai';
 import { z } from 'zod';
 
@@ -19,6 +21,7 @@ import {
   deleteChatById,
   getChatById,
   getDocumentById,
+  getDocumentsByUserId,
   saveChat,
   saveDocument,
   saveMessages,
@@ -45,7 +48,9 @@ type AllowedTools =
   | 'addResource'
   | 'getInformation'
   | 'addApartment'
-  | 'showDocuments';
+  | 'showDocument'
+  | 'getApartments'
+  | 'listApartments';
 
 const publicTools: AllowedTools[] = [
  'getInformation'
@@ -55,7 +60,9 @@ const privateTools: AllowedTools[] = [
   'createDocument',
   'updateDocument',
   'addApartment',
-  'showDocuments'
+  'showDocument',
+  'getApartments',
+  'listApartments'
 ];
 
 export async function POST(request: Request) {
@@ -440,12 +447,64 @@ export async function POST(request: Request) {
               };
             },
           },
-          showDocuments: {
-            description: `show the user the provided apartments via user-interface`,
-            parameters: z.object({ documentIds: z.array(z.string()) }),
-            execute: async ({ documentIds }) => {
+          listApartments: {
+            description: `list all apartments in the databse. For each apartment there's 'title' that contains its location and 'content' with information`,
+            parameters: z.object({}),
+            execute: async ({}, { messages }) => {
+              const id = generateUUID();
+              const apartments = await getDocumentsByUserId({ type: 'apartment', userId });
+
               return {
-                documentIds
+                apartments
+              };
+            },
+          },
+          getApartments: {
+            description: `get apartments that are relevant to the user's request`,
+            parameters: z.object({}),
+            execute: async ({}, { messages }) => {
+              const id = generateUUID();
+              const apartments = await getDocumentsByUserId({ type: 'apartment', userId });
+
+              const response: any = await generateObject({
+                model: customModel(model.apiIdentifier),
+                schema: z.object({ documentIds: z.array(z.string()), reason: z.string() }),
+                system: `
+                You are a real-estate broker with the following list of apartments:
+                ${apartments.map(apartment => `
+                Apartment Id: ${apartment.id}
+                Apartment Location: ${apartment.title}
+                Apartment Description: ${apartment.content}
+                `).join('\n\n')}
+
+                Message history:
+                ${JSON.stringify(messages)}
+
+                  `,
+                prompt:`
+                Please help the user find relevant apartments.
+                Include only relevant results.
+                Exclude apartments that are not relevant.
+                Your response should be a json of apartment ids, in the format: {
+                  "documentIds": ["documentId1", "documentId2", ...],
+                  "reason": <REASONING FOR YOUR CHOICE>
+                }
+
+                do not include \`\`\`json\`\`\`  in your response.
+                `
+              });
+
+              console.log(response.object);
+
+              return response.object;
+            },
+          },
+          showDocument: {
+            description: `show the user the provided apartment via user-interface`,
+            parameters: z.object({ documentId: z.string() }),
+            execute: async ({ documentId }) => {
+              return {
+                documentId
               }
             },
           },
@@ -475,27 +534,29 @@ export async function POST(request: Request) {
               const responseMessagesWithoutIncompleteToolCalls =
                 sanitizeResponseMessages(response.messages);
 
-              await saveMessages({
-                messages: responseMessagesWithoutIncompleteToolCalls.map(
-                  (message) => {
-                    const messageId = generateUUID();
+              if (responseMessagesWithoutIncompleteToolCalls && responseMessagesWithoutIncompleteToolCalls.length > 0) {
+                await saveMessages({
+                  messages: responseMessagesWithoutIncompleteToolCalls.map(
+                    (message) => {
+                      const messageId = generateUUID();
 
-                    if (message.role === 'assistant') {
-                      dataStream.writeMessageAnnotation({
-                        messageIdFromServer: messageId,
-                      });
-                    }
+                      if (message.role === 'assistant') {
+                        dataStream.writeMessageAnnotation({
+                          messageIdFromServer: messageId,
+                        });
+                      }
 
-                    return {
-                      id: messageId,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  },
-                ),
-              });
+                      return {
+                        id: messageId,
+                        chatId: id,
+                        role: message.role,
+                        content: message.content,
+                        createdAt: new Date(),
+                      };
+                    },
+                  ),
+                });
+              }
             } catch (error) {
               console.error('Failed to save chat');
             }

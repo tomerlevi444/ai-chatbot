@@ -28,14 +28,16 @@ This is a guide for using blocks tools: \`createDocument\` and \`updateDocument\
 
 Do not update document right after creating it. Wait for user feedback or request to update it.
 
-**After creating a document, call tool \`showDocuments\` with the documentId you have just created.**
-After call to \`showDocuments\`, no need to add any text to the user
+**After creating a document, call tool \`showDocument\` with the documentId you have just created.**
+After call to \`showDocument\`, no need to add any text to the user
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  `You are a friendly assistant! Keep your responses concise and helpful.
+   Do not make things up.
+   Always prefer to call tool \`showDocument\` to display an apartment to the user, instead of writing information about it yourself.`;
 
-export const systemPrompt = `${regularPrompt}\n\n${blocksPrompt}`;
+export const systemPrompt = `${regularPrompt}`;
 
 export const codePrompt = `
 You are a Python code generator that creates self-contained, executable code snippets. When writing code:
